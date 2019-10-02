@@ -1,0 +1,65 @@
+- name: Check if epel repository is installed
+  yum:
+    name: epel-release
+    state: latest
+- name: Install necessary packages (for IKE strongswan is used)
+  yum:
+    name: [strongswan, haveged, policycoreutils-python]
+    state: latest
+# The next five tasks are based on http://at-hacker.in/?go=all/ipsec-mezhdu-linux-i-windows-2012-r2/    
+- name: Check if the policy is not already applied
+  stat: 
+    path: /etc/selinux/tmp/swanctl2conf.te
+  register: policy_file
+- name: Copy a template for SELinux policy to allow Strongswan works properly
+  copy: 
+    src: ../templates/swanctl2conf.te
+    dest: /etc/selinux/tmp/
+  when: policy_file.stat.exists == False
+- name: Compile SELinux policy
+  command: checkmodule -m -M -o swanctl2conf.mod swanctl2conf.te
+  args:
+    chdir: /etc/selinux/tmp/
+  when: policy_file.stat.exists == False    
+- name: Make package on SELinux policy
+  command: semodule_package -o swanctl2conf.pp -m swanctl2conf.mod
+  args:
+    chdir: /etc/selinux/tmp/  
+  when: policy_file.stat.exists == False
+- name: Load the new SELinux policy
+  command: semodule -i swanctl2conf.pp
+  args:
+    chdir: /etc/selinux/tmp/  
+  when: policy_file.stat.exists == False
+# - name: Disable SELinux in configuration file
+#   replace:
+#     path: /etc/selinux/config
+#     regexp: SELINUX=\w*
+#     replace: SELINUX=disabled
+# - name: Disable SELinux temporarily
+#   shell: setenforce 0
+#   ignore_errors: yes
+- name: Allow traffic via firewalld
+  firewalld:
+    service: ipsec
+    permanent: yes
+    zone: public
+    state: enabled
+- name: Enable IP Forwarding
+  lineinfile:
+    line: "{{item}}"
+    path: /etc/sysctl.conf
+    state: present
+  with_items:
+    - net.ipv4.ip_forward = 1
+    - net.ipv6.conf.all.forwarding=1
+- name: Apply sysctl parameters
+  command: /usr/sbin/sysctl -p
+- name: Start services
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - haveged
+    - strongswan

@@ -1,0 +1,54 @@
+connections {
+
+   roadwarrior-psk {
+
+      pools = workers   
+      
+      encap = yes
+
+      local {
+         auth = psk
+         id = roadwarrior
+      }
+      remote {
+         auth = psk
+         id = %any
+         #eap_id = %any
+      }      
+
+      children {
+         roadwarrior-psk {
+            local_ts = {{RIGHT_TS_NETWORK}}
+            remote_ts = {{VPN_ADVERTISE}}
+
+            updown = /usr/libexec/strongswan/_updown iptables
+            esp_proposals = aes128gcm128-x25519
+
+            start_action = start
+            close_action = start
+            dpd_action = restart
+
+
+         }
+      }
+      version = 2
+      proposals = aes128-sha256-x25519
+   }
+}
+
+secrets {
+
+   ike-users {
+       #id = users
+      secret = {{USER_PSK}}
+   }   
+}
+
+
+pools {
+   workers {
+       
+       addrs = {{VPN_ADVERTISE}}
+   }
+
+}

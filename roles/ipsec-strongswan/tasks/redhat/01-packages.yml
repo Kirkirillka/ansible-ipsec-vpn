@@ -1,0 +1,11 @@
+- name: Check if epel repository is installed
+  yum:
+    name: epel-release
+    state: latest     
+- name: Install Strongswan (for IKE strongswan is used)
+  yum:
+    name: strongswan, haveged, policycoreutils-python
+    state: latest 
+  notify:
+    - restart strongswan
+    - enable strongswan    

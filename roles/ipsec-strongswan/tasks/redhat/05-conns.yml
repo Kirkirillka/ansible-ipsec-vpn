@@ -1,0 +1,14 @@
+- name: Ensure there is a folder to store clients' connection files
+  file:
+    path: "{{IPSEC_USERS_CONN_PATH}}"
+    state: directory   
+
+- name: Create a folder to store files for "{{user}}"    
+  file:
+    path: "{{IPSEC_USERS_CONN_PATH}}/{{user}}"
+    state: directory    
+
+- name: Create configuration file for a "{{user}}"    
+  template:
+    src: client.conf.j2
+    dest: "{{IPSEC_USERS_CONN_PATH}}/{{user}}/{{user}}.conf"       

@@ -1,0 +1,18 @@
+
+- debug:
+    msg: "Current roles are: {{CURRENT_ROLES}}"
+
+
+- debug:
+    msg: "Server roles are: {{SERVER_ROLES}}"    
+
+- debug:
+    msg: "CA roles are: {{CA_ROLES}}"    
+
+- debug:
+    msg: "CURRENT ROLE includes ca"
+  when: CURRENT_ROLES is superset(CA_ROLES)  
+
+- debug:
+    msg: "CURRENT ROLE includes server role"
+  when: CURRENT_ROLES is superset(SERVER_ROLES)  

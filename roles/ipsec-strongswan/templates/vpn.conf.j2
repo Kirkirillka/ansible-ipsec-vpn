@@ -1,0 +1,64 @@
+connections {
+
+   ikev2-pubkey {
+        version = 2
+        proposals =  default, aes128-aes256-sha2_256-sha256--prfsha256-prfsha384-modp1024-modp3072-modp2048
+        rekey_time = 0s
+        pools = rw_pool
+        fragmentation = yes
+        dpd_delay = 30s
+        # dpd_timeout doesn't do anything for IKEv2. The general IKEv2 packet timeouts are used.
+        local-1 {
+            certs =  {{IPSEC_CERT_PATH}}/{{IPSEC_CERT_NAME}}
+            id = {{IPSEC_FQDN}}
+        }
+        remote-1 {
+            # defaults are fine.
+        }
+        children {
+            ikev2-pubkey {
+                local_ts = {{IPSEC_ADVERTISE_DOMAIN}}
+                rekey_time = 0s
+                dpd_action = clear
+                esp_proposals =  default,aes128-aes256-sha2_256-sha256--prfsha256-prfsha384-modp1024-modp3072-modp2048
+                updown = /usr/libexec/strongswan/_updown iptables
+            }
+        }
+    }
+
+    ikev2-eap {
+        version = 2
+        proposals = default, aes128-aes256-sha2_256-sha256--prfsha256-prfsha384-modp1024-modp3072-modp2048
+        rekey_time = 0s
+        pools = rw_pool
+        fragmentation = yes
+        dpd_delay = 30s
+        # dpd_timeout doesn't do anything for IKEv2. The general IKEv2 packet timeouts are used.
+        local-1 {
+            certs =  {{IPSEC_CERT_PATH}}/{{IPSEC_CERT_NAME}}
+            id = {{IPSEC_FQDN}}
+        }
+        remote-1 {
+            auth = eap-dynamic
+            # go ask the client for its eap identity.
+            eap_id = %any
+        }
+        children {
+            ikev2-eap {
+                local_ts = {{IPSEC_ADVERTISE_DOMAIN}}
+                rekey_time = 0s
+                dpd_action = clear
+                esp_proposals = default,aes128-aes256-sha2_256-sha256--prfsha256-prfsha384-modp1024-modp3072-modp2048
+                updown = /usr/libexec/strongswan/_updown iptables
+            }
+        }
+    }
+}
+
+
+pools {
+        rw_pool  {
+                addrs = {{IPSEC_ENCRYPTION_DOMAIN}}
+                dns = {{IPSEC_ADVERTISE_DNS}}
+        }
+}

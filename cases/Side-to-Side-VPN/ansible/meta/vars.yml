@@ -1,0 +1,4 @@
+IPSEC_PRIV_KEY_PATH: /etc/strongswan/swanctl/private
+IPSEC_CERT_PATH: /etc/strongswan/swanctl/x509
+IPSEC_PKCS12_PATH: /etc/strongswan/swanctl/pkcs12
+IPSEC_CONF_PATH: /etc/strongswan/swanctl/conf.d

@@ -1,0 +1,4 @@
+- name: Put Strongswan in permissive mode, logging actions that would be blocked.
+  selinux_permissive:
+    name: ipsec_mgmt_t
+    permissive: true

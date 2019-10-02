@@ -1,0 +1,19 @@
+- name: Check if VPN pub\priv keys are already issued
+  stat: 
+    path: "{{IPSEC_PRIV_KEY_PATH}}/{{IPSEC_KEY_NAME}}"
+  register: vpn_file_result
+
+- name: Generate private key for VPN IPSec server
+  shell: /sbin/strongswan pki --gen --type rsa --size 2048 --outform pem > {{IPSEC_PRIV_KEY_PATH}}/{{IPSEC_KEY_NAME}}
+  when: vpn_file_result.stat.exists != true or (FORCE is defined  and FORCE)    
+
+- name: Generate Certificate for VPN IPSec server to authenticate this side
+  shell: /sbin/strongswan pki --pub --in {{IPSEC_PRIV_KEY_PATH}}/{{IPSEC_KEY_NAME}} --type rsa | /sbin/strongswan pki --issue --lifetime 730 --cacert {{IPSEC_CERT_PATH}}/{{CA_CERT_NAME}} --cakey {{IPSEC_PRIV_KEY_PATH}}/{{CA_KEY_NAME}} --dn "{{IPSEC_DN}}" --san {{IPSEC_FQDN}} --san @{{IPSEC_IP}} --san dns:{{IPSEC_IP}} --flag serverAuth  --flag clientAuth --flag ikeIntermediate --outform pem > {{IPSEC_CERT_PATH}}/{{IPSEC_CERT_NAME}}
+  when: vpn_file_result.stat.exists != true or (FORCE is defined  and FORCE)
+
+- name: Apply strongswan configuration (swanctl used)
+  template:
+    src: vpn.conf.j2
+    dest: "{{ IPSEC_CONF_PATH }}/vpn.conf"
+  notify:
+    - reload strongswan

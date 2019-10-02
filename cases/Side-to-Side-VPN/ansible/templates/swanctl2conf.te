@@ -1,0 +1,13 @@
+module swanctl2conf 1.0;
+
+require {
+        type ipsec_conf_file_t;
+        type ipsec_mgmt_t;
+        class dir { open read search };
+}
+
+#============= ipsec_mgmt_t ==============
+allow ipsec_mgmt_t ipsec_conf_file_t:dir open;
+
+#!!!! This avc is allowed in the current policy
+allow ipsec_mgmt_t ipsec_conf_file_t:dir { read search };

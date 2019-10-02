@@ -1,0 +1,11 @@
+- name: Apply strongswan VPN Connections configuration (swanctl used)
+  template:
+    src: "../templates/user.conf.j2"
+    dest: "{{ IPSEC_CONF_PATH }}/user.conf"
+- name: Run swanctl to apply configuration
+  service:
+    name: strongswan-swanctl
+    state: restarted
+    enabled: yes
+#- name: Establish IPSec connection
+#  shell: /usr/sbin/swanctl --initiate --child net-net

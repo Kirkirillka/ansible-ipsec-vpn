@@ -1,0 +1,6 @@
+# roles/example/tasks/main.yml
+- name: Import tasks for RHEL based distros
+  become: yes
+  import_tasks: redhat/main.yml
+  when: ansible_os_family == 'RedHat'
+

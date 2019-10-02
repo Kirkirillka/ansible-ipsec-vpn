@@ -1,0 +1,57 @@
+Vagrant.configure("2") do |config|
+
+  config.vm.define "alice" do |alice|
+    
+    alice.vm.box = "centos/7"
+    alice.vm.hostname = "alice.local"
+    alice.vm.network "private_network" ,  ip:"10.11.12.20", netmask:"255.255.255.0", virtualbox__intnet: "net1" , auto_config: true
+
+    #alice.vm.provision "shell", inline: "ip route add 10.11.13.0/24 via 10.11.12.10; true"
+
+    alice.vm.provision "ansible" do |ansible|
+      ansible.playbook = "ansible/playbooks/do_user.yml"
+    end
+
+
+  end
+
+
+  config.vm.define "bob" do |bob|
+    
+    bob.vm.box = "centos/7"
+    bob.vm.hostname = "bob.local"
+    bob.vm.network "private_network" ,  ip:"10.11.13.20", netmask:"255.255.255.0",virtualbox__intnet: "net2" , auto_config: true
+
+    #bob.vm.provision "shell", inline: "ip route add 10.11.12.0/24 via 10.11.13.10;true"
+
+  end
+
+  config.vm.define "left" do |left|
+    
+    left.vm.box = "centos/7"
+    left.vm.hostname = "leftside.local"
+    left.vm.network "private_network", ip:"192.168.51.10"
+    left.vm.network "private_network", ip: "192.168.50.10", virtualbox__intnet: true
+    left.vm.network "private_network" ,  ip:"10.11.12.10", netmask:"255.255.255.0", virtualbox__intnet: "net1" 
+
+    left.vm.provision "ansible" do |ansible|
+        ansible.playbook = "ansible/playbooks/do_left_side.yml"
+    end
+
+  end
+
+
+  config.vm.define "right" do |right|
+    
+    right.vm.box = "centos/7"
+    right.vm.hostname = "rightside.local"
+    right.vm.network "private_network", ip: "192.168.50.20", virtualbox__intnet: true
+    right.vm.network "private_network" , ip:"10.11.13.10", netmask:"255.255.255.0",  virtualbox__intnet: "net2"
+
+    right.vm.provision "ansible" do |ansible|
+        ansible.playbook = "ansible/playbooks/do_right_side.yml"
+      end
+
+  end
+
+end

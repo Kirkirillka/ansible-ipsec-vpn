@@ -1,0 +1,10 @@
+- name: Check if CA pub\priv keys are already exrolled
+  stat: 
+    path: "{{IPSEC_PRIV_KEY_PATH}}/{{CA_KEY_NAME}}"
+  register: ca_file_result
+- name: Generate Private RSA key for CA
+  shell: /sbin/strongswan pki --gen --type rsa --size 4096 --outform pem > {{IPSEC_PRIV_KEY_PATH}}/{{CA_KEY_NAME}}
+  when: ca_file_result.stat.exists != true or (FORCE is defined  and FORCE)
+- name: Generate Self-Signed Certificate for CA
+  shell: /sbin/strongswan pki --self --ca --lifetime 3650 --in {{IPSEC_PRIV_KEY_PATH}}/{{CA_KEY_NAME}} --type rsa --dn "{{CA_DN}}" --flag serverAuth  --flag clientAuth --flag crlSign  --flag ocspSigning  --outform pem > {{IPSEC_CERT_PATH}}/{{CA_CERT_NAME}}
+  when: ca_file_result.stat.exists != true or (FORCE is defined  and FORCE)

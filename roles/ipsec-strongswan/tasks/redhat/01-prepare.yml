@@ -1,0 +1,19 @@
+  
+- name: Allow ESP protocol
+  firewalld:
+    service: ipsec
+    permanent: yes
+    zone: public
+    state: enabled    
+- name: Enable IP Forwarding
+  lineinfile:
+    line: "{{item}}"
+    path: /etc/sysctl.conf
+    state: present
+  with_items:
+    - net.ipv4.ip_forward = 1
+    - net.ipv6.conf.all.forwarding=1    
+- name: Apply sysctl parameters
+  shell: /usr/sbin/sysctl -p > /dev/null
+  args:
+    creates: /tmp/ipsec_sysctl_enabled   

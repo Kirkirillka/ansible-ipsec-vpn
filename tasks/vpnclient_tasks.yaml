@@ -1,0 +1,48 @@
+- name: Check if epel repository is installed
+  yum:
+    name: epel-release
+    state: latest
+- name: Install necessary packages (for IKE strongswan is used)
+  yum:
+    name: strongswan
+    state: latest
+- name: Disable SELinux in configuration file
+  replace:
+    path: /etc/selinux/config
+    regexp: SELINUX=\w*
+    replace: SELINUX=disabled
+- name: Disable SELinux temporarily
+  shell: setenforce 0
+  ignore_errors: yes
+- name: Allow traffic via firewalld
+  firewalld:
+    service: ipsec
+    permanent: yes
+    state: enabled
+- name: Apply configuration on the "{{user}}"
+  template:
+    src: ../templates/client.conf.j2
+    dest: "{{IPSEC_CONF_PATH}}/client.conf"
+- name: Copy CA's  self-signed X509 certificate
+  copy:
+    src: "../endpoints/{{user}}/{{CA_CERT_NAME}}"
+    dest: "{{IPSEC_CERT_PATH}}"
+- name: Copy IPSec VPN server trusted X509 certificate
+  copy:
+    src: "../endpoints/{{user}}/{{IPSEC_CERT_NAME}}"
+    dest: "{{IPSEC_CERT_PATH}}"
+- name: Copy client's X509 certificate
+  copy:
+    src: "../endpoints/{{user}}/{{user}}_cert.pem"
+    dest: "{{IPSEC_CERT_PATH}}"
+- name: Copy client's private key
+  copy:
+    src: "../endpoints/{{user}}/{{user}}_key.pem"
+    dest: "{{IPSEC_PRIV_KEY_PATH}}"
+- name: Run swanctl to apply configuration
+  service:
+    name: strongswan-swanctl
+    state: restarted
+    enabled: yes
+- name: Establish IPSec connection
+  shell: /usr/sbin/swanctl --initiate --child vpn

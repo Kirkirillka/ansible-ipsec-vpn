@@ -1,0 +1,50 @@
+
+- name: Import RHEL specific environment variables
+  include_vars:
+    file: RedHat.yml 
+  tags: variables 
+
+- name : Run Debug
+  import_tasks: 00-debug.yml  
+  tags: debug
+
+
+- name: Install packages
+  import_tasks: 01-packages.yml  
+  tags: packages    
+
+- name: Prepare the host to allow receiveng and forwarding ESP traffic
+  import_tasks: 01-prepare.yml
+  tags: prepare
+  when: CURRENT_ROLES is superset(SERVER_ROLES) 
+
+- name: Install SELinux policy
+  import_tasks: 01-selinux.yml     
+  tags: selinux  
+  when: CURRENT_ROLES is superset(SERVER_ROLES) or CURRENT_ROLES is superset(USER_ROLES)
+
+- name: Configure Certificate Authority
+  import_tasks: 02-ca.yml
+  tags: ca  
+  when: CURRENT_ROLES is superset(CA_ROLES)
+
+- name: Enroll VPN Users' certificates
+  include_tasks: 04-users.yml  
+  with_items: '{{IPSEC_USERS}}'
+  vars:
+    user: "{{item}}"  
+  tags: users    
+  when: CURRENT_ROLES is superset(CA_ROLES)  
+
+- name: Configure Strongswan
+  import_tasks: 03-ipsec.yml
+  tags: strongswan  
+  when: CURRENT_ROLES is superset(SERVER_ROLES) 
+
+- name: Create VPN Users' connection configuration files
+  include_tasks: 05-conns.yml  
+  with_items: '{{IPSEC_USERS}}'
+  vars:
+    user: "{{item}}"    
+  tags: users     
+  when: CURRENT_ROLES is superset(SERVER_ROLES) 

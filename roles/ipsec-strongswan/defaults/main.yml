@@ -1,0 +1,30 @@
+ALL_ROLES: [ipsec-client, ipsec-server, ca]
+CURRENT_ROLES: [ipsec-server, ca]
+SERVER_ROLES: [ipsec-server]
+CA_ROLES: [ca]
+USER_ROLES: [ipsec-client]
+
+
+CA_KEY_NAME: cakey.pem
+CA_CERT_NAME: cacert.pem
+CA_FQDN: strongswan.org
+CA_DN: "C=RU, O=Technical Dept Root CA, CN={{CA_FQDN}}"
+
+IPSEC_KEY_NAME: ipsec_key.pem
+IPSEC_CERT_NAME: ipsec_cert.pem
+IPSEC_IP: "{{IPSEC_FQDN}}"
+IPSEC_FQDN: moon.strongswan.org
+IPSEC_DN: "C=RU, O=IPsec Server, CN={{IPSEC_FQDN}}"
+
+IPSEC_ENCRYPTION_DOMAIN: 10.90.12.12/28
+IPSEC_ADVERTISE_DOMAIN: 10.90.12.0/28
+IPSEC_ADVERTISE_DNS: 8.8.8.8, 8.8.4.4,
+
+
+IPSEC_USERS: [admin,]
+
+IPSEC_USER_MAPPING:  {
+    "localhost": "admin",
+  }
+
+

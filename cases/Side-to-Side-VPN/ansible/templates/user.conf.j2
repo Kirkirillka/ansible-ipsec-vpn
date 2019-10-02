@@ -1,0 +1,41 @@
+connections {
+
+   remote {
+      remote_addrs = {{VPN_IP}}
+      encap = yes
+      vips = 0.0.0.0 
+
+      local {
+         auth = psk
+         #id = users
+      }
+      remote {
+         auth = psk
+         id = roadwarrior
+      }
+      children {
+         remote {
+            remote_ts = {{LEFT_TS_NETWORK}}, {{RIGHT_TS_NETWORK}}
+            local_ts = {{VPN_ADVERTISE}}
+
+            updown = /usr/libexec/strongswan/_updown iptables
+            esp_proposals = aes128gcm128-x25519
+
+            start_action = start
+            close_action = start
+            dpd_action = start
+
+            mode = tunnel
+         }
+      }
+      version = 2
+      proposals = aes128-sha256-x25519
+   }
+}
+
+secrets {
+    ike-user {
+        id = roadwarrior
+        secret = {{USER_PSK}}
+   }
+}

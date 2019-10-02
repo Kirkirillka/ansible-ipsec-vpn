@@ -1,0 +1,36 @@
+connections {
+   vpn {
+      remote_addrs = {{IPSEC_IP}}
+      vips = 0.0.0.0
+
+
+      local {
+         auth = eap-tls
+         certs = {{user}}_cert.pem
+         id = {{user}}.{{CA_FQDN}}
+      }
+      remote {
+         id = {{IPSEC_FQDN}}
+      }
+      children {
+         vpn {
+            remote_ts = {{IPSEC_ENCRYPTION_DOMAIN}}
+
+            updown = /usr/libexec/strongswan/_updown iptables
+            rekey_time = 5400
+            rekey_bytes = 500000000
+            rekey_packets = 1000000
+            esp_proposals = aes192gcm16-aes128gcm16-prfsha256-ecp256-ecp521,aes192-sha256-modp3072
+
+            dpd_action = clear
+            start_action = start
+         }
+      }
+
+      rekey_time = 6400s
+      reauth_time = 100s
+
+      proposals = aes192gcm16-aes128gcm16-prfsha256-ecp256-ecp521,aes192-sha256-modp3072
+      version = 2
+   }
+}
