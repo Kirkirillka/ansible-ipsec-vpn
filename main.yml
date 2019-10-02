@@ -1,6 +1,6 @@
 - hosts: ipsec
   roles:
-    - role: ipsec-strongswan
+    - role: ansible-ipsec-vpn
       vars:
         CURRENT_ROLES: [ipsec-server,ca]
         CA_FQDN: ca.mysite.com
@@ -10,7 +10,7 @@
 
 - hosts: clients
   roles:
-    - role: ipsec-strongswan
+    - role: ansible-ipsec-vpn
       vars:
         CURRENT_ROLES: [ipsec-client]    
         CA_FQDN: ca.mysite.com
